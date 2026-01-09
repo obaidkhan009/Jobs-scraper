@@ -80,6 +80,7 @@ def run_scraper_task():
         from scrapers.dice_scraper import DiceScraper
         from scrapers.greenhouse_scraper import GreenhouseScraper
         from scrapers.lever_scraper import LeverScraper
+        from scrapers.ziprecruiter_scraper import ZipRecruiterScraper
         from utils.tech_matcher import TechMatcher
         from utils.google_sheets_exporter import GoogleSheetsExporter
         from config.google_sheets_config import CREDENTIALS_PATH, CREDENTIALS_JSON
@@ -97,6 +98,7 @@ def run_scraper_task():
             ("Dice", DiceScraper),
             ("Greenhouse", GreenhouseScraper),
             ("Lever", LeverScraper),
+            ("ZipRecruiter", ZipRecruiterScraper),
         ]
         
         # Initialize Google Sheets exporter
