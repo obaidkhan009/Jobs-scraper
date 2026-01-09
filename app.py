@@ -103,30 +103,48 @@ def run_scraper_task():
         )
         existing_job_keys = sheets_exporter.load_existing_job_keys()
         
-        # Scrape each platform
-        for idx, (platform_name, ScraperClass) in enumerate(platforms):
-            scraper_status["current_platform"] = platform_name
-            scraper_status["progress"] = int((idx / len(platforms)) * 60)
-            scraper_status["message"] = f"Scraping {platform_name}..."
-            
+        # Parallel scraping function
+        def scrape_single_platform(platform_info):
+            platform_name, ScraperClass = platform_info
+            platform_jobs = []
             try:
                 scraper = ScraperClass(headless=True)
-                platform_jobs = []
-                
-                for title in JOB_TITLES:  # Search all job titles
-                    jobs = scraper.search(
-                        query=title,
-                        location=LOCATION,
-                        remote_only=REMOTE_ONLY,
-                        posted_within_hours=POSTED_WITHIN_HOURS
-                    )
-                    platform_jobs.extend(jobs)
-                
+                for title in JOB_TITLES:
+                    try:
+                        jobs = scraper.search(
+                            query=title,
+                            location=LOCATION,
+                            remote_only=REMOTE_ONLY,
+                            posted_within_hours=POSTED_WITHIN_HOURS
+                        )
+                        platform_jobs.extend(jobs)
+                    except:
+                        continue
                 scraper.close()
-                all_jobs.extend(platform_jobs)
-                
             except Exception as e:
                 print(f"Error scraping {platform_name}: {e}")
+            return platform_name, platform_jobs
+        
+        # Run all scrapers in parallel
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        
+        scraper_status["message"] = "Scraping all platforms in parallel..."
+        
+        results = {}
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            futures = {executor.submit(scrape_single_platform, p): p[0] for p in platforms}
+            completed = 0
+            for future in as_completed(futures):
+                platform_name = futures[future]
+                try:
+                    name, jobs = future.result()
+                    results[name] = jobs
+                    all_jobs.extend(jobs)
+                    completed += 1
+                    scraper_status["progress"] = int((completed / len(platforms)) * 60)
+                    scraper_status["message"] = f"Completed {name}: {len(jobs)} jobs"
+                except Exception as e:
+                    print(f"[{platform_name}] Failed: {e}")
         
         # Filter jobs
         scraper_status["progress"] = 70

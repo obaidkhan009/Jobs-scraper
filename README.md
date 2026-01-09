@@ -55,6 +55,22 @@ Automated job search tool that scrapes jobs from multiple platforms, filters the
 | **Auth** | Google Service Account |
 | **Frontend** | Embedded HTML/CSS/JS (no framework) |
 
+## Dependencies
+
+| Library | Version | Purpose |
+|---------|---------|---------|
+| selenium | ≥4.15.0 | Browser automation for scraping |
+| webdriver-manager | ≥4.0.1 | Auto-manage Chrome WebDriver |
+| beautifulsoup4 | ≥4.12.2 | HTML parsing (fallback) |
+| lxml | ≥4.9.3 | Fast XML/HTML parser |
+| requests | ≥2.31.0 | HTTP requests |
+| openpyxl | ≥3.1.2 | Excel export (fallback) |
+| gspread | ≥5.12.0 | Google Sheets API client |
+| google-auth | ≥2.23.0 | Google authentication |
+| fastapi | ≥0.104.0 | Web dashboard framework |
+| uvicorn | ≥0.24.0 | ASGI server |
+| jinja2 | ≥3.1.2 | HTML templating |
+
 ## Key Features
 
 - **Multi-Platform Scraping**: Google Jobs, LinkedIn, Indeed, Dice

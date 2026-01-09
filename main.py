@@ -393,13 +393,10 @@ def main():
     all_jobs = []
     
     try:
-        # ==================== GOOGLE JOBS ====================
+        # ==================== PARALLEL SCRAPING ====================
         print("\n" + "=" * 60)
-        print("📌 GOOGLE JOBS SEARCH")
+        print("🚀 PARALLEL SCRAPING - All Platforms Simultaneously")
         print("=" * 60)
-        
-        print("\n[Init] Starting Google Jobs scraper...")
-        google_scraper = GoogleJobsScraper(headless=True)  # Run in background
         
         print(f"\n[Search] Searching for {len(JOB_TITLES)} job titles...")
         print(f"[Search] Location: {LOCATION}")
@@ -407,94 +404,67 @@ def main():
         print(f"[Search] Posted Within: {POSTED_WITHIN_HOURS} hours")
         print("-" * 60)
         
-        for title in JOB_TITLES:
-            jobs = google_scraper.search(
-                query=title,
-                location=LOCATION,
-                remote_only=REMOTE_ONLY,
-                posted_within_hours=POSTED_WITHIN_HOURS
-            )
-            all_jobs.extend(jobs)
-            print(f"  ✓ {title}: {len(jobs)} jobs found")
+        from concurrent.futures import ThreadPoolExecutor, as_completed
         
-        google_scraper.close()
-        google_scraper = None
-        print(f"\n[Google Jobs] Total: {len(all_jobs)} jobs")
+        def scrape_platform(platform_info):
+            """Scrape a single platform for all job titles."""
+            platform_name, ScraperClass = platform_info
+            platform_jobs = []
+            
+            try:
+                print(f"\n[{platform_name}] Starting...")
+                scraper = ScraperClass(headless=True)
+                
+                for title in JOB_TITLES:
+                    try:
+                        jobs = scraper.search(
+                            query=title,
+                            location=LOCATION,
+                            remote_only=REMOTE_ONLY,
+                            posted_within_hours=POSTED_WITHIN_HOURS
+                        )
+                        platform_jobs.extend(jobs)
+                    except Exception as e:
+                        print(f"[{platform_name}] Error searching '{title}': {e}")
+                        continue
+                
+                scraper.close()
+                print(f"[{platform_name}] ✓ Complete: {len(platform_jobs)} jobs")
+                
+            except Exception as e:
+                print(f"[{platform_name}] Error: {e}")
+            
+            return platform_name, platform_jobs
         
-        # ==================== LINKEDIN ====================
-        print("\n" + "=" * 60)
-        print("📌 LINKEDIN JOBS SEARCH")
-        print("=" * 60)
+        # Define all platforms
+        platforms = [
+            ("Google Jobs", GoogleJobsScraper),
+            ("LinkedIn", LinkedInScraper),
+            ("Indeed", IndeedScraper),
+            ("Dice", DiceScraper),
+        ]
         
-        print("\n[Init] Starting LinkedIn scraper...")
-        linkedin_scraper = LinkedInScraper(headless=True)  # Run in background
+        # Run all scrapers in parallel
+        results = {}
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            futures = {executor.submit(scrape_platform, p): p[0] for p in platforms}
+            
+            for future in as_completed(futures):
+                platform_name = futures[future]
+                try:
+                    name, jobs = future.result()
+                    results[name] = jobs
+                    all_jobs.extend(jobs)
+                except Exception as e:
+                    print(f"[{platform_name}] Failed: {e}")
+                    results[platform_name] = []
         
-        linkedin_count = 0
-        for title in JOB_TITLES:
-            jobs = linkedin_scraper.search(
-                query=title,
-                location=LOCATION,
-                remote_only=REMOTE_ONLY,
-                posted_within_hours=POSTED_WITHIN_HOURS
-            )
-            all_jobs.extend(jobs)
-            linkedin_count += len(jobs)
-            print(f"  ✓ {title}: {len(jobs)} jobs found")
-        
-        linkedin_scraper.close()
-        linkedin_scraper = None
-        print(f"\n[LinkedIn] Total: {linkedin_count} jobs")
-        
-        # ==================== INDEED ====================
-        print("\n" + "=" * 60)
-        print("📌 INDEED JOBS SEARCH")
-        print("=" * 60)
-        
-        print("\n[Init] Starting Indeed scraper...")
-        indeed_scraper = IndeedScraper(headless=True)  # Run in background
-        
-        indeed_count = 0
-        for title in JOB_TITLES:
-            jobs = indeed_scraper.search(
-                query=title,
-                location=LOCATION,
-                remote_only=REMOTE_ONLY,
-                posted_within_hours=POSTED_WITHIN_HOURS
-            )
-            all_jobs.extend(jobs)
-            indeed_count += len(jobs)
-            print(f"  ✓ {title}: {len(jobs)} jobs found")
-        
-        indeed_scraper.close()
-        indeed_scraper = None
-        print(f"\n[Indeed] Total: {indeed_count} jobs")
-        
-        # ==================== DICE ====================
-        print("\n" + "=" * 60)
-        print("📌 DICE JOBS SEARCH")
-        print("=" * 60)
-        
-        print("\n[Init] Starting Dice scraper...")
-        dice_scraper = DiceScraper(headless=True)  # Run in background
-        
-        dice_count = 0
-        for title in JOB_TITLES:
-            jobs = dice_scraper.search(
-                query=title,
-                location=LOCATION,
-                remote_only=REMOTE_ONLY,
-                posted_within_hours=POSTED_WITHIN_HOURS
-            )
-            all_jobs.extend(jobs)
-            dice_count += len(jobs)
-            print(f"  ✓ {title}: {len(jobs)} jobs found")
-        
-        dice_scraper.close()
-        dice_scraper = None
-        print(f"\n[Dice] Total: {dice_count} jobs")
-        
-        print("-" * 60)
-        print(f"[Search] Total jobs found: {len(all_jobs)}")
+        # Print summary
+        print("\n" + "-" * 60)
+        print("📊 SCRAPING RESULTS:")
+        for platform, jobs in results.items():
+            print(f"  {platform}: {len(jobs)} jobs")
+        print(f"\n[Search] Total jobs found: {len(all_jobs)}")
         
         # Deduplicate jobs (within this run)
         print("\n[Processing] Removing duplicates from this run...")
