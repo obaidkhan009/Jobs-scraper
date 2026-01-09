@@ -98,8 +98,8 @@ class LinkedInScraper(BaseScraper):
         else:
             params.append("f_TPR=r2592000")  # Past month
         
-        # Salary filter - $120k+ (salary bucket 6)
-        params.append("f_SB2=6")
+        # Salary filter - $120k+ (salary bucket 5)
+        params.append("f_SB2=5")
         
         return f"{base_url}?{'&'.join(params)}"
     
