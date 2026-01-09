@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+.venv/
+
+# Credentials (IMPORTANT - never commit these!)
+*.json
+!package.json
+credentials.json
+secure-wharf-*.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Output
+output/
+*.xlsx
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
