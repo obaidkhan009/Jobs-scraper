@@ -78,6 +78,8 @@ def run_scraper_task():
         from scrapers.linkedin_scraper import LinkedInScraper
         from scrapers.indeed_scraper import IndeedScraper
         from scrapers.dice_scraper import DiceScraper
+        from scrapers.greenhouse_scraper import GreenhouseScraper
+        from scrapers.lever_scraper import LeverScraper
         from utils.tech_matcher import TechMatcher
         from utils.google_sheets_exporter import GoogleSheetsExporter
         from config.google_sheets_config import CREDENTIALS_PATH, CREDENTIALS_JSON
@@ -93,6 +95,8 @@ def run_scraper_task():
             ("LinkedIn", LinkedInScraper),
             ("Indeed", IndeedScraper),
             ("Dice", DiceScraper),
+            ("Greenhouse", GreenhouseScraper),
+            ("Lever", LeverScraper),
         ]
         
         # Initialize Google Sheets exporter

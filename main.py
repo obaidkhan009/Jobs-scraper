@@ -33,6 +33,8 @@ from scrapers.google_jobs_scraper import GoogleJobsScraper
 from scrapers.linkedin_scraper import LinkedInScraper
 from scrapers.indeed_scraper import IndeedScraper
 from scrapers.dice_scraper import DiceScraper
+from scrapers.greenhouse_scraper import GreenhouseScraper
+from scrapers.lever_scraper import LeverScraper
 from utils.tech_matcher import TechMatcher
 from utils.excel_exporter import ExcelExporter
 from utils.google_sheets_exporter import GoogleSheetsExporter
@@ -436,17 +438,19 @@ def main():
             
             return platform_name, platform_jobs
         
-        # Define all platforms
+        # Define all platforms (6 total - runs in parallel)
         platforms = [
             ("Google Jobs", GoogleJobsScraper),
             ("LinkedIn", LinkedInScraper),
             ("Indeed", IndeedScraper),
             ("Dice", DiceScraper),
+            ("Greenhouse", GreenhouseScraper),
+            ("Lever", LeverScraper),
         ]
         
         # Run all scrapers in parallel
         results = {}
-        with ThreadPoolExecutor(max_workers=4) as executor:
+        with ThreadPoolExecutor(max_workers=6) as executor:
             futures = {executor.submit(scrape_platform, p): p[0] for p in platforms}
             
             for future in as_completed(futures):
