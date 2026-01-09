@@ -330,18 +330,31 @@ def filter_us_remote_only(jobs: list) -> list:
                   f"(Non-US location: {job.location})")
             continue
         
-        # Check for onsite/hybrid in title, location, or description
+        # Check for onsite/hybrid in title, location, AND description
         is_onsite = False
         matched_indicator = None
+        matched_field = None
+        
         for indicator in onsite_indicators:
-            if indicator in title or indicator in location:
+            if indicator in title:
                 is_onsite = True
                 matched_indicator = indicator
+                matched_field = "title"
+                break
+            elif indicator in location:
+                is_onsite = True
+                matched_indicator = indicator
+                matched_field = "location"
+                break
+            elif indicator in description:
+                is_onsite = True
+                matched_indicator = indicator
+                matched_field = "description"
                 break
         
         if is_onsite:
             print(f"[Remote Filter] Excluded: {job.title} at {job.company} "
-                  f"(Found '{matched_indicator}')")
+                  f"(Found '{matched_indicator}' in {matched_field})")
             continue
         
         filtered.append(job)

@@ -113,7 +113,7 @@ def run_scraper_task():
                 scraper = ScraperClass(headless=True)
                 platform_jobs = []
                 
-                for title in JOB_TITLES[:10]:  # Limit titles for faster runs
+                for title in JOB_TITLES:  # Search all job titles
                     jobs = scraper.search(
                         query=title,
                         location=LOCATION,

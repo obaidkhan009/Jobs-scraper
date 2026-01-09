@@ -191,22 +191,43 @@ class GoogleJobsScraper(BaseScraper):
                     
                     const spans = card.querySelectorAll('span');
                     spans.forEach(span => {
-                        const text = span.innerText.trim();
-                        // Only match date patterns, exclude salary strings (no $ or currency symbols)
-                        if ((text.includes('ago') || text.match(/^\d+\s*(hour|day|week|month)s?\s*(ago)?$/i)) 
-                            && !text.includes('$') && !text.includes('hour') && !text.includes('yr')) {
-                            datePosted = text;
+                        const text = span.innerText.trim().toLowerCase();
+                        
+                        // Match various date patterns
+                        if (!datePosted) {
+                            // "X hours ago", "X days ago", "X weeks ago"
+                            if (text.match(/^\d+\s*(hour|day|week|month)s?\s*ago$/i)) {
+                                datePosted = span.innerText.trim();
+                            }
+                            // "today", "yesterday"
+                            else if (text === 'today' || text === 'yesterday') {
+                                datePosted = span.innerText.trim();
+                            }
+                            // "just now", "just posted"
+                            else if (text.includes('just now') || text.includes('just posted')) {
+                                datePosted = 'Just now';
+                            }
+                            // Check for "posted X ago" format
+                            else if (text.includes('posted') && text.includes('ago')) {
+                                const match = text.match(/(\d+\s*(hour|day|week|month)s?\s*ago)/i);
+                                if (match) datePosted = match[1];
+                            }
                         }
-                        // Better date pattern: "X hours ago", "X days ago"
-                        const dateMatch = text.match(/^(\d+\s*(hours?|days?|weeks?|months?)\s*ago|today|yesterday)$/i);
-                        if (dateMatch && !datePosted) {
-                            datePosted = text;
-                        }
-                        if (text.includes('Full-time') || text.includes('Part-time') || 
-                            text.includes('Contract') || text.includes('Intern')) {
-                            jobType = text;
+                        
+                        if (text.includes('full-time') || text.includes('part-time') || 
+                            text.includes('contract') || text.includes('intern')) {
+                            jobType = span.innerText.trim();
                         }
                     });
+                    
+                    // Fallback: check parent container for date info
+                    if (!datePosted) {
+                        const cardText = card.innerText.toLowerCase();
+                        const dateMatch = cardText.match(/(\d+)\s*(hour|day|week|month)s?\s*ago/i);
+                        if (dateMatch) {
+                            datePosted = dateMatch[0];
+                        }
+                    }
                     
                     if (title) {
                         jobs.push({

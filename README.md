@@ -1,28 +1,82 @@
 # Jobs-Scraper 🔍
 
-Automated job search tool that scrapes jobs from multiple platforms and exports to Google Sheets.
+Automated job search tool that scrapes jobs from multiple platforms, filters them by your preferences, and exports to Google Sheets.
 
-## Features
+## Architecture Overview
 
-- **Multi-Platform Search**: Google Jobs, LinkedIn, Indeed, Dice
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        FastAPI Dashboard (app.py)                   │
+│                     http://localhost:8000                           │
+└────────────────────────────────┬────────────────────────────────────┘
+                                 │
+                                 ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                         SCRAPING LAYER                              │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌────────────┐  │
+│  │ Google Jobs  │ │   LinkedIn   │ │    Indeed    │ │    Dice    │  │
+│  │   Scraper    │ │   Scraper    │ │   Scraper    │ │  Scraper   │  │
+│  └──────────────┘ └──────────────┘ └──────────────┘ └────────────┘  │
+│                     (Selenium + Chrome Headless)                    │
+└────────────────────────────────┬────────────────────────────────────┘
+                                 │
+                                 ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                        FILTERING PIPELINE                           │
+│  1. Deduplicate (remove same job from multiple platforms)           │
+│  2. Filter existing (skip jobs already in Google Sheet)             │
+│  3. Location filter (US only, exclude non-US locations)             │
+│  4. Remote filter (exclude onsite/hybrid jobs)                      │
+│  5. Tech stack filter (match good tech, exclude bad tech)           │
+│  6. Salary filter ($120K+ minimum)                                  │
+│  7. Date filter (last 24 hours only)                                │
+│  8. Job type filter (exclude entry-level, intern, clearance)        │
+└────────────────────────────────┬────────────────────────────────────┘
+                                 │
+                                 ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                         EXPORT LAYER                                │
+│  ┌─────────────────────────────────────────────────────────────┐    │
+│  │              Google Sheets API (gspread)                    │    │
+│  │  - Daily sheets (YYYY-MM-DD)                                │    │
+│  │  - Section dividers (Morning/Afternoon/Evening)             │    │
+│  │  - Deduplication across all sheets                          │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+## Tech Stack
+
+| Component | Technology |
+|-----------|------------|
+| **Backend** | Python 3.11+, FastAPI |
+| **Web Scraping** | Selenium, Chrome WebDriver |
+| **Cloud Export** | Google Sheets API (gspread) |
+| **Auth** | Google Service Account |
+| **Frontend** | Embedded HTML/CSS/JS (no framework) |
+
+## Key Features
+
+- **Multi-Platform Scraping**: Google Jobs, LinkedIn, Indeed, Dice
 - **Smart Filtering**: Tech stack matching, salary, remote-only, location
-- **Google Sheets Export**: Daily sheets with Morning/Afternoon/Evening sections
-- **Deduplication**: Prevents duplicate jobs across runs
+- **Deduplication**: Prevents duplicate jobs across runs (checked against Google Sheet)
+- **Daily Organization**: Jobs organized by date with Morning/Afternoon/Evening sections
+- **Web Dashboard**: One-click run with progress tracking
 
 ## Setup
 
-1. Install dependencies:
+1. **Install dependencies:**
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Add your Google Sheets credentials:
-   - Create a service account in Google Cloud Console
-   - Download the JSON credentials file
-   - Place it in the project root
-   - Update `config/google_sheets_config.py` with the filename
+2. **Configure Google Sheets credentials:**
+   - Create a Google Cloud service account
+   - Download JSON credentials
+   - Place in project root
+   - Update `config/google_sheets_config.py`
 
-3. Configure your preferences in `config/tech_stacks.py`:
+3. **Configure job preferences** in `config/tech_stacks.py`:
    - Job titles to search
    - Good/bad technologies
    - Minimum salary
@@ -30,22 +84,40 @@ pip install -r requirements.txt
 
 ## Usage
 
+### Option 1: Command Line
 ```bash
 python3 main.py
 ```
 
-Run 3x daily for best results - each run creates a section in the daily sheet.
+### Option 2: Web Dashboard
+```bash
+python3 -m uvicorn app:app --port 8000
+# Open http://localhost:8000
+```
 
-## Configuration
+## Configuration Files
 
 | File | Purpose |
 |------|---------|
 | `config/tech_stacks.py` | Job titles, tech preferences, salary, filters |
 | `config/google_sheets_config.py` | Google Sheets settings |
 
+## Filtering Logic
+
+Jobs pass through these filters in order:
+
+1. **Deduplication** - Remove duplicate jobs from multiple platforms
+2. **Existing Check** - Skip jobs already saved to Google Sheet  
+3. **Location** - US only (excludes India, UK, Canada, etc.)
+4. **Remote** - Excludes jobs with "onsite", "hybrid", "in-office" in title/location/description
+5. **Tech Stack** - Matches your preferred technologies
+6. **Salary** - Minimum $120K (configurable)
+7. **Date** - Posted within last 24 hours
+8. **Job Type** - Excludes entry-level, intern, clearance-required
+
 ## Output
 
-Jobs are exported to your Google Sheet with columns:
+Jobs exported to Google Sheets with columns:
 - Job Title, Company, Location, Salary
-- Good/Bad Tech Found, Score
+- Good/Bad Tech Found, Match Score
 - Platform, Date Posted, Job Link
