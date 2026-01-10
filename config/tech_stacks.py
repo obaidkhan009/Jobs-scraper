@@ -242,13 +242,9 @@ JOB_TITLES = [
     'Senior Data Scientist',
     'Data Analyst',
     'Senior Data Analyst',
-    'Business Data Analyst',
     'Data Engineer',
     'Big Data Engineer',
-    'Analytics Engineer',
-    'Decision Scientist',
-    'Quantitative Analyst',
-    'BI Developer',
+
 
     # Backend / Software
     'Backend Developer',
@@ -258,13 +254,8 @@ JOB_TITLES = [
     'Senior Software Engineer',
     'Python Developer',
     'Python Backend Developer',
-    'Django Developer',
-    'FastAPI Developer',
-    'REST API Developer',
     'API Engineer',
-    'Microservices Engineer',
     'Platform Engineer',
-    'Systems Engineer',
 
     # AWS / Cloud / DevOps
     'AWS Engineer',
@@ -274,8 +265,6 @@ JOB_TITLES = [
     'Cloud Architect',
     'AWS Solutions Architect',
     'DevOps Engineer',
-    'Site Reliability Engineer',
-    'SRE',
     'Infrastructure Engineer',
     'Cloud DevOps Engineer',
     'Cloud Security Engineer',
@@ -286,10 +275,8 @@ JOB_TITLES = [
     'MLOps Engineer',
     'AI Platform Engineer',
     'Cloud ML Engineer',
-    'AI Infrastructure Engineer',
     'Backend Data Engineer',
     'ML Systems Engineer',
-    'GenAI Platform Engineer',
 ]
 
 # Minimum salary requirement (annual)
