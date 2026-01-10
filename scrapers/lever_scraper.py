@@ -107,7 +107,7 @@ class LeverScraper(BaseScraper):
         url = f"{self.BASE_URL}/{company_slug}?mode=json"
         
         try:
-            response = self.session.get(url, timeout=10)
+            response = self.session.get(url, timeout=30)
             if response.status_code != 200:
                 return jobs
             
@@ -123,13 +123,11 @@ class LeverScraper(BaseScraper):
                 categories = job_data.get("categories", {})
                 job_location = categories.get("location", "")
                 
-                # Filter for remote/US if needed
+                # Filter for remote if needed
                 if remote_only:
                     loc_lower = job_location.lower() if job_location else ""
-                    is_remote = any(x in loc_lower for x in ['remote', 'anywhere', 'distributed', 'work from home'])
-                    is_us = any(x in loc_lower for x in ['united states', 'usa', 'us', 'new york', 'san francisco', 'seattle', 'boston', 'chicago', 'austin', 'denver', 'los angeles'])
-                    
-                    if not is_remote and not is_us:
+                    # Only allow jobs that explicitly mention remote
+                    if not any(x in loc_lower for x in ['remote', 'anywhere', 'distributed', 'work from home', 'wfh']):
                         continue
                 
                 # Get job URL

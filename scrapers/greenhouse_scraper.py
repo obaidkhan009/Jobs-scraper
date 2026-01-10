@@ -106,7 +106,7 @@ class GreenhouseScraper(BaseScraper):
         api_url = f"{self.API_URL}/{company_slug}/jobs"
         
         try:
-            response = self.session.get(api_url, timeout=10)
+            response = self.session.get(api_url, timeout=30)
             if response.status_code != 200:
                 return jobs
             
@@ -125,10 +125,9 @@ class GreenhouseScraper(BaseScraper):
                 # Filter for remote if needed
                 if remote_only:
                     loc_lower = job_location.lower()
-                    if not any(x in loc_lower for x in ['remote', 'anywhere', 'distributed']):
-                        # Check if US location
-                        if not any(x in loc_lower for x in ['united states', 'usa', 'us', 'new york', 'san francisco', 'seattle', 'boston', 'chicago', 'austin', 'denver']):
-                            continue
+                    # Only allow jobs that explicitly mention remote
+                    if not any(x in loc_lower for x in ['remote', 'anywhere', 'distributed', 'work from home', 'wfh']):
+                        continue
                 
                 # Get job details
                 job_url = job_data.get("absolute_url", "")
@@ -202,7 +201,7 @@ class GreenhouseScraper(BaseScraper):
         """Get full job description."""
         try:
             url = f"{self.API_URL}/{company_slug}/jobs/{job_id}"
-            response = self.session.get(url, timeout=10)
+            response = self.session.get(url, timeout=30)
             if response.status_code == 200:
                 data = response.json()
                 content = data.get("content", "")
