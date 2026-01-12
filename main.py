@@ -99,9 +99,15 @@ def parse_date_posted(date_str: str) -> int:
     Lower number = more recent.
     """
     if not date_str:
-        return 9999  # Unknown dates go to the end
+        return 0  # Empty dates = assume recent (don't filter out)
     
-    date_lower = date_str.lower()
+    date_lower = date_str.lower().strip()
+    
+    # Handle special cases first
+    if 'today' in date_lower or 'just now' in date_lower:
+        return 0
+    if 'yesterday' in date_lower:
+        return 24
     
     # Match patterns like "2 hours ago", "3 days ago", etc.
     hours_match = re.search(r'(\d+)\s*hour', date_lower)
@@ -120,13 +126,24 @@ def parse_date_posted(date_str: str) -> int:
     if months_match:
         return int(months_match.group(1)) * 24 * 30
     
-    # Handle special cases
-    if 'today' in date_lower or 'just now' in date_lower:
-        return 0
-    if 'yesterday' in date_lower:
-        return 24
+    # Handle ISO date format (2026-01-12, 2026-01-12T...)
+    iso_match = re.match(r'(\d{4})-(\d{2})-(\d{2})', date_str)
+    if iso_match:
+        try:
+            posted_date = datetime(
+                int(iso_match.group(1)), 
+                int(iso_match.group(2)), 
+                int(iso_match.group(3))
+            )
+            now = datetime.now()
+            diff = now - posted_date
+            hours = int(diff.total_seconds() / 3600)
+            return max(0, hours)  # Negative = future date, treat as recent
+        except:
+            pass
     
-    return 9999
+    # Unknown format - assume recent (don't filter out)
+    return 0
 
 
 def sort_jobs_by_date(jobs: list) -> list:
