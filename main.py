@@ -456,20 +456,20 @@ def main():
             
             return platform_name, platform_jobs
         
-        # Define all platforms (7 total - runs in parallel)
+        # Define all platforms (5 active - LinkedIn & ZipRecruiter disabled for now)
         platforms = [
             ("Google Jobs", GoogleJobsScraper),
-            ("LinkedIn", LinkedInScraper),
+            # ("LinkedIn", LinkedInScraper),  # Disabled: requires login, anti-bot detection
             ("Indeed", IndeedScraper),
             ("Dice", DiceScraper),
             ("Greenhouse", GreenhouseScraper),
             ("Lever", LeverScraper),
-            ("ZipRecruiter", ZipRecruiterScraper),
+            # ("ZipRecruiter", ZipRecruiterScraper),  # Disabled: selectors outdated
         ]
         
         # Run all scrapers in parallel
         results = {}
-        with ThreadPoolExecutor(max_workers=7) as executor:
+        with ThreadPoolExecutor(max_workers=5) as executor:
             futures = {executor.submit(scrape_platform, p): p[0] for p in platforms}
             
             for future in as_completed(futures):

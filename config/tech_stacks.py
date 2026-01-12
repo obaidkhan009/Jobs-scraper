@@ -215,68 +215,33 @@ EXCLUDED_JOB_TYPES = [
     "day 1 onsite",
 ]
 
-# Target job titles to search for
+# Target job titles to search for (consolidated for speed)
+# Note: Search engines use NLP matching, so "Machine Learning Engineer" 
+# will match "ML Engineer", "Senior ML Engineer", etc.
 JOB_TITLES = [
-    # AI / ML
-    'AI Engineer',
-    'Artificial Intelligence Engineer',
+    # AI / ML (Core - these cover most AI/ML variations)
     'Machine Learning Engineer',
-    'ML Engineer',
-    'Deep Learning Engineer',
-    'Computer Vision Engineer',
-    'NLP Engineer',
-    'Natural Language Processing Engineer',
-    'AI Research Engineer',
-    'Research Scientist (AI)',
-    'Applied Scientist (ML)',
-    'ML Scientist',
-    'AI Developer',
-    'Generative AI Engineer',
-    'LLM Engineer',
-    'Prompt Engineer',
-    'AI Solutions Engineer',
-    'Applied AI Scientist',
-
-    # Data
+    'AI Engineer',
     'Data Scientist',
-    'Senior Data Scientist',
-    'Data Analyst',
-    'Senior Data Analyst',
+    'NLP Engineer',
+    'Computer Vision Engineer',
+    'MLOps Engineer',
+    'LLM Engineer',
+    'Applied Scientist',
+    
+    # Data Engineering
     'Data Engineer',
-    'Big Data Engineer',
-
-
-    # Backend / Software
-    'Backend Developer',
+    
+    # Backend / Python
+    'Python Developer',
     'Backend Engineer',
     'Software Engineer',
-    'Software Developer',
-    'Senior Software Engineer',
-    'Python Developer',
-    'Python Backend Developer',
-    'API Engineer',
-    'Platform Engineer',
-
-    # AWS / Cloud / DevOps
-    'AWS Engineer',
-    'AWS Cloud Engineer',
-    'Cloud Engineer',
-    'Cloud Solutions Engineer',
-    'Cloud Architect',
-    'AWS Solutions Architect',
+    
+    # Cloud / DevOps / Infrastructure
     'DevOps Engineer',
+    'Cloud Engineer',
+    'Platform Engineer',
     'Infrastructure Engineer',
-    'Cloud DevOps Engineer',
-    'Cloud Security Engineer',
-
-    # Hybrid AI + Backend + Cloud
-    'AI Backend Engineer',
-    'ML Backend Engineer',
-    'MLOps Engineer',
-    'AI Platform Engineer',
-    'Cloud ML Engineer',
-    'Backend Data Engineer',
-    'ML Systems Engineer',
 ]
 
 # Minimum salary requirement (annual)
