@@ -128,13 +128,27 @@ BAD_TECH = [
     # Other exclusions
     "mobile development",
     "UI/UX",
-    "Co-Founder",
-    "Staff",
     "R",
     "Secret-level",
     "Hadoop",
     "Azure ADF",
     "Banking Domain",
+    
+    # Leadership/Founder roles (not engineering)
+    "Co-Founder",
+    "Cofounder",
+    "Founder",
+    "Owner",
+    "CEO",
+    "CTO",
+    "CFO",
+    "COO",
+    "Chief",
+    "President",
+    "VP of",
+    "Vice President",
+    "Director of",
+    "Head of",
 ]
 
 # Maximum number of bad tech matches allowed before filtering out

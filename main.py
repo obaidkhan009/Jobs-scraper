@@ -284,6 +284,13 @@ def filter_excluded_jobs(jobs: list) -> list:
     filtered = []
     
     for job in jobs:
+        # Skip jobs from Dice (even if they come through Google Jobs)
+        platform_lower = job.platform.lower() if job.platform else ''
+        url_lower = job.url.lower() if job.url else ''
+        if 'dice' in platform_lower or 'dice.com' in url_lower:
+            print(f"[Dice Filter] Excluded: {job.title} at {job.company} (from Dice)")
+            continue
+        
         # Combine title, company, location, and description for checking
         text_to_check = f"{job.title} {job.company} {job.location} {job.description}".lower()
         
@@ -308,16 +315,60 @@ def filter_us_remote_only(jobs: list) -> list:
     """
     filtered = []
     
-    # Non-US location indicators
+    # Non-US location indicators (comprehensive list)
     non_us_indicators = [
-        'uk', 'united kingdom', 'london', 'europe', 'eu only',
-        'india', 'bangalore', 'hyderabad', 'mumbai', 'delhi', 'chennai',
+        # Europe
+        'uk', 'united kingdom', 'london', 'manchester', 'birmingham', 'edinburgh',
+        'europe', 'eu only', 'emea',
+        'germany', 'berlin', 'munich', 'frankfurt', 'hamburg',
+        'france', 'paris', 'lyon',
+        'netherlands', 'amsterdam', 'rotterdam',
+        'ireland', 'dublin',
+        'spain', 'madrid', 'barcelona',
+        'italy', 'milan', 'rome',
+        'switzerland', 'zurich', 'geneva',
+        'belgium', 'brussels',
+        'austria', 'vienna',
+        'sweden', 'stockholm',
+        'denmark', 'copenhagen',
+        'norway', 'oslo',
+        'finland', 'helsinki',
+        'poland', 'warsaw', 'krakow',
+        'portugal', 'lisbon',
+        'romania', 'bucharest',
+        'ukraine', 'kyiv',
+        'czech', 'prague',
+        
+        # Asia
+        'india', 'bangalore', 'bengaluru', 'hyderabad', 'mumbai', 'delhi', 'chennai', 'pune', 'noida', 'gurgaon',
         'pakistan', 'lahore', 'karachi', 'islamabad',
-        'canada', 'toronto', 'vancouver', 'montreal',
-        'australia', 'sydney', 'melbourne',
-        'singapore', 'philippines', 'manila', 'nigeria', 'lagos',
-        'germany', 'berlin', 'france', 'paris', 'spain', 'madrid',
-        'brazil', 'mexico', 'argentina', 'latam'
+        'china', 'beijing', 'shanghai', 'shenzhen', 'hangzhou',
+        'japan', 'tokyo', 'osaka',
+        'south korea', 'seoul',
+        'singapore',
+        'hong kong',
+        'taiwan', 'taipei',
+        'vietnam', 'hanoi', 'ho chi minh',
+        'thailand', 'bangkok',
+        'indonesia', 'jakarta',
+        'malaysia', 'kuala lumpur',
+        'philippines', 'manila',
+        
+        # Middle East
+        'israel', 'tel aviv',
+        'uae', 'dubai', 'abu dhabi',
+        
+        # Other
+        'canada', 'toronto', 'vancouver', 'montreal', 'ottawa', 'calgary',
+        'australia', 'sydney', 'melbourne', 'brisbane',
+        'new zealand', 'auckland',
+        'brazil', 'sao paulo',
+        'mexico', 'mexico city',
+        'argentina', 'buenos aires',
+        'latam', 'latin america',
+        'nigeria', 'lagos',
+        'south africa', 'cape town', 'johannesburg',
+        'apac', 'asia pacific',
     ]
     
     # Onsite/hybrid indicators (exclude these jobs)
@@ -456,12 +507,12 @@ def main():
             
             return platform_name, platform_jobs
         
-        # Define all platforms (5 active - LinkedIn & ZipRecruiter disabled for now)
+        # Define all platforms (4 active - LinkedIn, ZipRecruiter, Dice disabled)
         platforms = [
             ("Google Jobs", GoogleJobsScraper),
             # ("LinkedIn", LinkedInScraper),  # Disabled: requires login, anti-bot detection
             ("Indeed", IndeedScraper),
-            ("Dice", DiceScraper),
+            # ("Dice", DiceScraper),  # Disabled: slow, duplicates Google Jobs results
             ("Greenhouse", GreenhouseScraper),
             ("Lever", LeverScraper),
             # ("ZipRecruiter", ZipRecruiterScraper),  # Disabled: selectors outdated
@@ -469,7 +520,7 @@ def main():
         
         # Run all scrapers in parallel
         results = {}
-        with ThreadPoolExecutor(max_workers=5) as executor:
+        with ThreadPoolExecutor(max_workers=4) as executor:
             futures = {executor.submit(scrape_platform, p): p[0] for p in platforms}
             
             for future in as_completed(futures):
